@@ -156,3 +156,18 @@ Misma estructura: PK simple `id_*` determina el resto de atributos no clave del 
 | compra | id_compra | id_cliente → cliente; id_empleado → empleado |
 | factura | id_factura | id_compra → compra (UNIQUE) |
 | detalle | id_detalle | id_factura → factura; id_producto → producto |
+
+---
+
+## 5. Vista e índices (implementación en PostgreSQL)
+
+El archivo [`db/schema.sql`](../db/schema.sql) materializa este diseño con tipos concretos, `NOT NULL`, PK, FK y restricciones `CHECK`.
+
+**Vista `vista_reporte_ventas`:** une `factura`, `compra`, `cliente`, `empleado`, `detalle` y `producto`, filtrando facturas en estado `emitida`, para alimentar reportes de ventas en la aplicación sin duplicar datos en tablas base.
+
+**Índices explícitos (justificación):**
+
+| Índice | Columna(s) | Motivo |
+|--------|------------|--------|
+| `idx_factura_fecha_emision` | `factura(fecha_emision)` | Consultas por rango de fechas en reportes y listados temporales. |
+| `idx_detalle_id_factura` | `detalle(id_factura)` | Acceso por factura al listar líneas y JOIN frecuente `detalle` ↔ `factura`. |
