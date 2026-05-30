@@ -1,5 +1,7 @@
--- Esquema relacional: tienda (inventario y ventas)
--- Motor objetivo: PostgreSQL 16+
+-- Esquema relacional: tienda (inventario y ventas) — Proyecto 3
+-- Motor: PostgreSQL 16+
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 DROP VIEW IF EXISTS vista_reporte_ventas CASCADE;
 
@@ -8,6 +10,7 @@ DROP TABLE IF EXISTS factura CASCADE;
 DROP TABLE IF EXISTS compra CASCADE;
 DROP TABLE IF EXISTS producto_proveedor CASCADE;
 DROP TABLE IF EXISTS producto_categoria CASCADE;
+DROP TABLE IF EXISTS usuario_app CASCADE;
 DROP TABLE IF EXISTS cliente CASCADE;
 DROP TABLE IF EXISTS producto CASCADE;
 DROP TABLE IF EXISTS proveedor CASCADE;
@@ -108,7 +111,15 @@ CREATE TABLE detalle (
   CONSTRAINT chk_detalle_subtotal CHECK (subtotal = cantidad * precio_unitario)
 );
 
--- Vista consumida por el backend para listados de ventas (líneas con contexto de cliente y empleado).
+CREATE TABLE usuario_app (
+  id_usuario SERIAL PRIMARY KEY,
+  username VARCHAR(80) NOT NULL UNIQUE,
+  password_hash TEXT NOT NULL,
+  rol_db VARCHAR(80) NOT NULL,
+  nombre VARCHAR(120) NOT NULL,
+  activo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
 CREATE VIEW vista_reporte_ventas AS
 SELECT
   f.id_factura,
@@ -134,8 +145,8 @@ INNER JOIN detalle d ON d.id_factura = f.id_factura
 INNER JOIN producto p ON p.id_producto = d.id_producto
 WHERE f.estado = 'emitida';
 
--- Índice en fecha_emision: filtros por rango en reportes y dashboards.
 CREATE INDEX idx_factura_fecha_emision ON factura (fecha_emision);
-
--- Índice en id_factura en detalle: JOIN detalle↔factura y agregaciones por factura.
 CREATE INDEX idx_detalle_id_factura ON detalle (id_factura);
+
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM PUBLIC;
