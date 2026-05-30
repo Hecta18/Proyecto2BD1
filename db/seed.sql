@@ -3,7 +3,7 @@
 
 BEGIN;
 
-TRUNCATE TABLE detalle, factura, compra, producto_proveedor, producto_categoria, cliente, producto, proveedor, categoria, empleado RESTART IDENTITY CASCADE;
+TRUNCATE TABLE detalle, factura, compra, producto_proveedor, producto_categoria, usuario_app, cliente, producto, proveedor, categoria, empleado RESTART IDENTITY CASCADE;
 
 INSERT INTO empleado (nombre, activo) VALUES
   ('Ana Martínez', TRUE),
@@ -262,5 +262,13 @@ INSERT INTO detalle (id_factura, id_producto, cantidad, precio_unitario, subtota
   (23, 21, 4, 3.50, 14.00),
   (24, 23, 3, 2.80, 8.40),
   (25, 25, 6, 2.95, 17.70);
+
+-- Usuarios de prueba (contraseña: secret) — uno por rol del DBMS
+INSERT INTO usuario_app (username, password_hash, rol_db, nombre) VALUES
+  ('admin', crypt('secret', gen_salt('bf')), 'rol_administrador', 'Administrador Demo'),
+  ('gerente', crypt('secret', gen_salt('bf')), 'rol_gerente_tienda', 'Gerente Demo'),
+  ('vendedor', crypt('secret', gen_salt('bf')), 'rol_vendedor', 'Vendedor Demo'),
+  ('almacen', crypt('secret', gen_salt('bf')), 'rol_almacenista', 'Almacenista Demo'),
+  ('auditor', crypt('secret', gen_salt('bf')), 'rol_auditor', 'Auditor Demo');
 
 COMMIT;
