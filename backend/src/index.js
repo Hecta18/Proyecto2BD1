@@ -4,8 +4,6 @@ import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { pool } from './db.js';
 import { consultasRoutes } from './routes/consultas.js';
 import { productosRoutes } from './routes/productos.js';
@@ -16,6 +14,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const frontendRoot = path.join(__dirname, '../../frontend');
+
+async function waitForDatabase(maxAttempts = 30, delayMs = 1000) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await pool.query('SELECT 1');
+      return;
+    } catch (err) {
+      if (attempt === maxAttempts) {
+        throw err;
+      }
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}
 
 const app = Fastify({ logger: true });
 
@@ -57,6 +69,7 @@ const port = Number(process.env.PORT) || 3000;
 const host = process.env.HOST || '0.0.0.0';
 
 try {
+  await waitForDatabase();
   await app.listen({ port, host });
 } catch (err) {
   app.log.error(err);
