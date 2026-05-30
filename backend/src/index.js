@@ -1,10 +1,21 @@
+import dotenv from 'dotenv';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import fastifyStatic from '@fastify/static';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { pool } from './db.js';
 import { consultasRoutes } from './routes/consultas.js';
 import { productosRoutes } from './routes/productos.js';
 import { clientesRoutes } from './routes/clientes.js';
 import { ventasRoutes } from './routes/ventas.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+
+const frontendRoot = path.join(__dirname, '../../frontend');
 
 const app = Fastify({ logger: true });
 
@@ -29,6 +40,18 @@ app.register(consultasRoutes, { pool });
 app.register(productosRoutes, { pool });
 app.register(clientesRoutes, { pool });
 app.register(ventasRoutes, { pool });
+
+await app.register(fastifyStatic, {
+  root: frontendRoot,
+  prefix: '/',
+});
+
+app.setNotFoundHandler((request, reply) => {
+  if (request.method === 'GET' && !request.url.startsWith('/api/')) {
+    return reply.sendFile('index.html');
+  }
+  return reply.code(404).send({ error: 'No encontrado' });
+});
 
 const port = Number(process.env.PORT) || 3000;
 const host = process.env.HOST || '0.0.0.0';
