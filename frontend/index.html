@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tienda — Inventario y ventas</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <h1>Tienda</h1>
+      <p class="subtitle">Inventario y ventas</p>
+    </div>
+    <nav class="nav" aria-label="Secciones">
+      <button type="button" class="nav-btn active" data-section="reporte">Reporte ventas</button>
+      <button type="button" class="nav-btn" data-section="productos">Productos</button>
+      <button type="button" class="nav-btn" data-section="clientes">Clientes</button>
+      <button type="button" class="nav-btn" data-section="venta">Nueva venta</button>
+      <button type="button" class="nav-btn" data-section="consultas">Consultas SQL</button>
+    </nav>
+  </header>
+
+  <main class="main">
+    <div id="alert" class="alert hidden" role="alert"></div>
+
+    <!-- Reporte principal (VIEW) -->
+    <section id="section-reporte" class="section active">
+      <div class="section-head">
+        <h2>Reporte de ventas</h2>
+        <p class="hint">Datos desde la vista <code>vista_reporte_ventas</code> (líneas vendidas con cliente y empleado).</p>
+        <button type="button" class="btn primary" id="btn-cargar-reporte">Actualizar reporte</button>
+      </div>
+      <div id="reporte-meta" class="meta"></div>
+      <div class="table-wrap" id="reporte-table"></div>
+    </section>
+
+    <!-- CRUD Productos -->
+    <section id="section-productos" class="section">
+      <div class="section-head">
+        <h2>Productos</h2>
+        <button type="button" class="btn primary" id="btn-nuevo-producto">Nuevo producto</button>
+      </div>
+      <form id="form-producto" class="card form-card hidden">
+        <h3 id="form-producto-titulo">Nuevo producto</h3>
+        <input type="hidden" id="producto-id" />
+        <label>Nombre <input type="text" id="producto-nombre" required maxlength="200" /></label>
+        <label>Precio venta <input type="number" id="producto-precio" step="0.01" min="0" required /></label>
+        <label>Stock <input type="number" id="producto-stock" min="0" step="1" required /></label>
+        <label class="checkbox">
+          <input type="checkbox" id="producto-activo" checked /> Activo
+        </label>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Guardar</button>
+          <button type="button" class="btn" id="btn-cancelar-producto">Cancelar</button>
+        </div>
+      </form>
+      <div class="table-wrap" id="productos-table"></div>
+    </section>
+
+    <!-- CRUD Clientes -->
+    <section id="section-clientes" class="section">
+      <div class="section-head">
+        <h2>Clientes</h2>
+        <button type="button" class="btn primary" id="btn-nuevo-cliente">Nuevo cliente</button>
+      </div>
+      <form id="form-cliente" class="card form-card hidden">
+        <h3 id="form-cliente-titulo">Nuevo cliente</h3>
+        <input type="hidden" id="cliente-id" />
+        <label>Nombre <input type="text" id="cliente-nombre" required maxlength="160" /></label>
+        <label>Email <input type="email" id="cliente-email" maxlength="180" /></label>
+        <label>Teléfono <input type="text" id="cliente-telefono" maxlength="40" /></label>
+        <label>ID empleado (quien atiende) <input type="number" id="cliente-empleado" min="1" step="1" required /></label>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Guardar</button>
+          <button type="button" class="btn" id="btn-cancelar-cliente">Cancelar</button>
+        </div>
+      </form>
+      <div class="table-wrap" id="clientes-table"></div>
+    </section>
+
+    <!-- Venta transaccional -->
+    <section id="section-venta" class="section">
+      <div class="section-head">
+        <h2>Registrar venta</h2>
+        <p class="hint">Transacción en el servidor: compra, factura, detalle y descuento de stock.</p>
+      </div>
+      <form id="form-venta" class="card form-card">
+        <div class="form-grid">
+          <label>Cliente (ID) <input type="number" id="venta-cliente" min="1" required /></label>
+          <label>Empleado (ID) <input type="number" id="venta-empleado" min="1" required /></label>
+          <label>Fecha <input type="date" id="venta-fecha" required /></label>
+        </div>
+        <fieldset class="lineas-fieldset">
+          <legend>Líneas de producto</legend>
+          <div id="venta-lineas"></div>
+          <button type="button" class="btn" id="btn-add-linea">+ Añadir línea</button>
+        </fieldset>
+        <div class="form-actions">
+          <button type="submit" class="btn primary">Registrar venta</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Consultas SQL -->
+    <section id="section-consultas" class="section">
+      <div class="section-head">
+        <h2>Consultas SQL</h2>
+        <p class="hint">Cada botón ejecuta una consulta distinta en el backend (SQL explícito).</p>
+      </div>
+      <div class="query-grid">
+        <div class="query-card">
+          <h3>JOIN — Resumen facturas</h3>
+          <p>Factura, compra, cliente, empleado.</p>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/join-resumen-facturas">Ejecutar</button>
+        </div>
+        <div class="query-card">
+          <h3>JOIN — Producto / categoría / proveedor</h3>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/join-producto-categoria-proveedor">Ejecutar</button>
+        </div>
+        <div class="query-card">
+          <h3>JOIN — Atención y ventas</h3>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/join-atencion-ventas">Ejecutar</button>
+        </div>
+        <div class="query-card">
+          <h3>Subconsulta NOT IN</h3>
+          <p>Productos sin ventas en facturas emitidas.</p>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/subquery-productos-sin-venta">Ejecutar</button>
+        </div>
+        <div class="query-card">
+          <h3>Subconsulta en FROM</h3>
+          <p>Clientes con resumen de compras.</p>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/subquery-clientes-desde-from">Ejecutar</button>
+        </div>
+        <div class="query-card">
+          <h3>Subconsulta EXISTS</h3>
+          <p>Empleados con al menos una venta.</p>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/subquery-empleados-con-ventas">Ejecutar</button>
+        </div>
+        <div class="query-card">
+          <h3>GROUP BY / HAVING</h3>
+          <label>Total mínimo
+            <input type="number" id="min-total" value="15" min="0" step="0.01" />
+          </label>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/agregados-ventas-por-categoria" data-param-min="min-total" data-param-name="minTotal">Ejecutar</button>
+        </div>
+        <div class="query-card">
+          <h3>CTE (WITH)</h3>
+          <p>Ventas mensuales y acumulado.</p>
+          <button type="button" class="btn primary query-btn" data-url="/api/consultas/cte-ventas-mensuales">Ejecutar</button>
+        </div>
+      </div>
+      <div id="consulta-titulo" class="meta"></div>
+      <div class="table-wrap" id="consulta-table"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <span id="api-status">Comprobando API…</span>
+  </footer>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
