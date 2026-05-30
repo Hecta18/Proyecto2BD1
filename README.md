@@ -12,12 +12,27 @@ Webapp de tienda simple.
 Ubicación: [`backend/`](backend/). Variables: copiar [`.env.example`](.env.example) a `.env` y ajustar `DATABASE_URL` (usuario `proy2`, contraseña `secret`).
 
 ```bash
+cp .env.example .env   # Windows: copy .env.example .env
 cd backend
 npm install
 npm run dev
 ```
 
-Servicio por defecto: `http://localhost:3000`. Comprobación: `GET /health`.
+Servicio por defecto: `http://localhost:3000`. Comprobación: `GET /health`. Abrir **`http://localhost:3000/`** en el navegador para la interfaz web (mismo origen que la API).
+
+## Interfaz web (`frontend/`)
+
+HTML, CSS y JavaScript sin framework. El backend sirve los estáticos desde [`frontend/`](frontend/).
+
+| Sección | Funcionalidad |
+|---------|----------------|
+| **Reporte ventas** | Tabla desde la vista `vista_reporte_ventas` |
+| **Productos** | CRUD completo con validaciones |
+| **Clientes** | CRUD completo con validaciones |
+| **Nueva venta** | Registro transaccional con líneas de producto |
+| **Consultas SQL** | JOINs, subconsultas, `GROUP BY`/`HAVING`, CTE |
+
+Los errores de validación y de la API se muestran en un banner bajo la cabecera.
 
 | Método | Ruta | Descripción |
 |--------|------|----------------|
