@@ -3,6 +3,7 @@ const API_BASE = '';
 async function request(method, path, body) {
   const opts = {
     method,
+    credentials: 'include',
     headers: { Accept: 'application/json' },
   };
   if (body !== undefined) {
@@ -71,6 +72,7 @@ export function renderTable(container, rows, emptyMessage = 'Sin datos') {
 export function showAlert(el, message, type = 'error') {
   el.textContent = message;
   el.className = `alert ${type}`;
+  el.classList.remove('hidden');
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
