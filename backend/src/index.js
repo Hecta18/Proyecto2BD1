@@ -5,6 +5,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import fastifyStatic from '@fastify/static';
 import { pool } from './db.js';
+import { authPlugin } from './auth.js';
 import { consultasRoutes } from './routes/consultas.js';
 import { productosRoutes } from './routes/productos.js';
 import { clientesRoutes } from './routes/clientes.js';
@@ -21,9 +22,7 @@ async function waitForDatabase(maxAttempts = 30, delayMs = 1000) {
       await pool.query('SELECT 1');
       return;
     } catch (err) {
-      if (attempt === maxAttempts) {
-        throw err;
-      }
+      if (attempt === maxAttempts) throw err;
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
@@ -36,22 +35,21 @@ app.setErrorHandler((error, _request, reply) => {
     return reply.code(400).send({ error: 'Cuerpo de la petición no válido', detalle: error.message });
   }
   const status = error.statusCode ?? 500;
-  if (status >= 500) {
-    app.log.error(error);
-  }
+  if (status >= 500) app.log.error(error);
   return reply.code(status).send({
     error: status === 500 ? 'Error interno del servidor' : error.message,
   });
 });
 
-await app.register(cors, { origin: true });
+await app.register(cors, { origin: true, credentials: true });
+await app.register(authPlugin);
 
 app.get('/health', async () => ({ ok: true }));
 
-app.register(consultasRoutes, { pool });
-app.register(productosRoutes, { pool });
-app.register(clientesRoutes, { pool });
-app.register(ventasRoutes, { pool });
+await app.register(consultasRoutes);
+await app.register(productosRoutes);
+await app.register(clientesRoutes);
+await app.register(ventasRoutes);
 
 await app.register(fastifyStatic, {
   root: frontendRoot,
